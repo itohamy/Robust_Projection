@@ -1,0 +1,32 @@
+
+import matplotlib.pyplot as plt
+
+
+# =============================================================================
+# Figures $ subplots
+# =============================================================================
+
+def open_figure(figure_num, figure_title, figsize):
+    plt.figure(figure_num, figsize)
+    plt.clf()
+    plt.suptitle(figure_title, fontsize=13)
+    
+
+def PlotImages(figure_num, rows, cols, ind, images, titles, cmap, axis=True, colorbar=True, **kwargs):
+    plt.figure(figure_num)
+    plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9 , top=0.9, wspace=0.8, hspace=0.8)
+    for i in range(len(images)):
+        if(images[i] is None):
+            continue
+        ax = plt.subplot(rows, cols, i+ind)
+        ax.set_title(titles[i])
+        _kwargs = {}
+        if 'm' in kwargs:
+            m = kwargs['m']
+            _kwargs['vmin']=-m
+            _kwargs['vmax']=m
+        img = ax.imshow(images[i], cmap=cmap, interpolation = 'None', **_kwargs)
+        if axis == False:
+            plt.axis('off')
+        if colorbar == True:
+            plt.colorbar(img, fraction=0.046, pad=0.04)
