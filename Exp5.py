@@ -21,36 +21,58 @@ def main():
     """ Generate outliers (moving object) for one frame and keep the ground truth W """
     X_o, W = generate_outliers(X_norm, d, m, n)
 
-    """ Solve WLS (w=1 for background pixels, w=0 of object pixels) - this is the ground truth alpha"""
-    alpha_o = solve_wls(W, V, X_o)
-    # print(alpha_o)
-    # alpha_o += (100000)*np.random.standard_normal(alpha_o.size).reshape(k,1)
-    # print(alpha_o)
-    print("X_norm shape:", X_norm.shape, "  V shape:", V.shape, "  alpha_o shape:", alpha_o.shape, "  W shape:", W.shape)
+    """ Initialize alpha and W """
+    # !!!! CONTINUE HERE !!!!!
 
-    """ Projection on the subspace """
-    proj, error = project_on_subspace(X_norm[:, :1], V, V.T @ X_norm[:, :1])
-    proj_o, error_o = project_on_subspace(X_o, V, V.T @ X_o)
-    proj_robust, error_robust = project_on_subspace(X_o, V, alpha_o)
+    """ Alternate between finding alpha and W """
+    while True:
+        # !!!! CONTINUE HERE !!!!!
+        alpha = (W, V, X_o)
+        W = find_W(alpha)
 
-    """ Plot projections and errors """
-    plt_image, plt_proj, plt_error = prepare_projection_to_display(X_norm[:, :1], proj, error, m, n)
-    plt_image_o, plt_proj_o, plt_error_o = prepare_projection_to_display(X_o, proj_o, error_o, m, n)
-    plt_image_robust, plt_proj_robust, plt_error_robust = prepare_projection_to_display(X_o, proj_robust, error_robust, m, n)
 
-    """ Compute Graph Cut to get W """
-    gc_out = compute_graphcut(X_o, proj_robust, m, n)
+    # """ Solve WLS (w=1 for background pixels, w=0 of object pixels) - this is the ground truth alpha"""
+    # alpha_o = solve_wls(W, V, X_o)
+    # # print(alpha_o)
+    # # alpha_o += (100000)*np.random.standard_normal(alpha_o.size).reshape(k,1)
+    # # print(alpha_o)
+    # print("X_norm shape:", X_norm.shape, "  V shape:", V.shape, "  alpha_o shape:", alpha_o.shape, "  W shape:", W.shape)
+    #
+    # """ Projection on the subspace """
+    # proj, error = project_on_subspace(X_norm[:, :1], V, V.T @ X_norm[:, :1])
+    # proj_o, error_o = project_on_subspace(X_o, V, V.T @ X_o)
+    # proj_robust, error_robust = project_on_subspace(X_o, V, alpha_o)
+    #
+    # """ Plot projections and errors """
+    # plt_image, plt_proj, plt_error = prepare_projection_to_display(X_norm[:, :1], proj, error, m, n)
+    # plt_image_o, plt_proj_o, plt_error_o = prepare_projection_to_display(X_o, proj_o, error_o, m, n)
+    # plt_image_robust, plt_proj_robust, plt_error_robust = prepare_projection_to_display(X_o, proj_robust, error_robust, m, n)
+    #
+    # """ Compute Graph Cut to get W """
+    # gc_out = compute_graphcut(X_o, proj_robust, m, n)
+    #
+    # """ Display results """
+    # open_figure(1,'Projections', (7,7))
+    # PlotImages(1,3,3,1,[plt_image, plt_image_o, plt_image_robust, plt_proj, plt_proj_o, plt_proj_robust, plt_error, plt_error_o, plt_error_robust],
+    #            ['Direct Proj., X', 'Direct Proj., X_o', 'Robust Proj., X_o', 'Proj.', 'Proj.', 'Proj.', 'Error', 'Error', 'Error'],
+    #            'gray',axis=True, colorbar=True, m=200)
+    # open_figure(2,'Graph Cut', (5,5))
+    # PlotImages(2,1,1,1,[gc_out],
+    #            ['Graph Cut'],
+    #            'gray',axis=True,colorbar=True)
+    # plt.show()
 
-    """ Display results """
-    open_figure(1,'Projections', (7,7))
-    PlotImages(1,3,3,1,[plt_image, plt_image_o, plt_image_robust, plt_proj, plt_proj_o, plt_proj_robust, plt_error, plt_error_o, plt_error_robust],
-               ['Direct Proj., X', 'Direct Proj., X_o', 'Robust Proj., X_o', 'Proj.', 'Proj.', 'Proj.', 'Error', 'Error', 'Error'],
-               'gray',axis=True, colorbar=True, m=200)
-    open_figure(2,'Graph Cut', (5,5))
-    PlotImages(2,1,1,1,[gc_out],
-               ['Graph Cut'],
-               'gray',axis=True,colorbar=True)
-    plt.show()
+
+def find_alpha(W, V, X_o):
+    alpha = solve_wls(W, V, X_o)
+    return alpha
+
+
+def find_W(alpha, X, V, m, n):
+    proj_robust, error_robust = project_on_subspace(X, V, alpha)
+    gc_out = compute_graphcut(X, proj_robust, m, n)
+    # convert the segmentation to weights
+    return W
 
 
 def update_params():
