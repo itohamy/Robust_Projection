@@ -1,22 +1,25 @@
 import numpy as np
 import maxflow
-
+from Bunch import Bunch
 
 def compute_graphcut(X, proj, m, n):
     # Create the graph
     g = maxflow.Graph[int](m, n)
     nodes = g.add_nodes(m * n)
-    sigma_BG = 0.4
-    sigma_FG = 1
+    sigma_BG = 5
+    sigma_FG = 10
     lambda_ = 2
+    source_weight = np.zeros_like(X)
+    sink_weight = np.zeros_like(X)
     # go through all nodes and add edges
+    #sigma_BG=sigma_FG=5 # DEBUG
     for i in range(m * n):
         # add edge source->pixels and pixels->sink:
-        source_weight = ((1./(sigma_BG)**2)*(abs(X[i]-proj[i])))   # X_o[i]  # BG probability
-        sink_weight = (X[i]**2)/(sigma_FG**2)   # 255 - X_o[i]  # FG probability
-        g.add_tedge(i, source_weight, sink_weight)
+        source_weight[i] = ((1./(sigma_BG)**2)*((X[i]-proj[i])**2))   # X_o[i]  # BG probability
+        sink_weight[i] = (X[i]**2)/(sigma_FG**2)   # 255 - X_o[i]  # FG probability
+        g.add_tedge(i, source_weight[i], sink_weight[i])
         if i == 3859 or i == 3860 or i == 3861 or i == 1970 or i == 7830 or i == 19300:
-            print(i, source_weight, sink_weight, X[i], proj[i], X[i]-proj[i])
+            print(i, source_weight[i], sink_weight[i], X[i], proj[i], X[i]-proj[i])
         # add edges between pixels neighbors
         if i % n != 0:  # left exists
             edge_wt = lambda_
@@ -55,4 +58,8 @@ def compute_graphcut(X, proj, m, n):
                 out[i,j] = -1 # background
             else:
                 out[i,j] = 1 # foreground
-    return out
+    b = Bunch()
+    b.out = out
+    b.source_weight = source_weight
+    b.sink_weight = sink_weight
+    return b
